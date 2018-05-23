@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class permutations {
     public ArrayList<ArrayList<Integer>> permute(ArrayList<Integer> A) {
         ArrayList<ArrayList<Integer>> result = new ArrayList<ArrayList<Integer>>();

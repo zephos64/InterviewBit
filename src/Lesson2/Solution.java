@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Solution {
     public ArrayList<ArrayList<Integer>> prettyPrint(int A) {
         int matrixIndex = -1;

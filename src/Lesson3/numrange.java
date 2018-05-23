@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class numrange {
     public int numRange(ArrayList<Integer> A, int B, int C) {
         int result = 0;
