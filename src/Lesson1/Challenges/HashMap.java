@@ -5,6 +5,7 @@ public class HashMap {
         CodePathHashMap<Integer, Integer> hash =
                 new CodePathHashMap<Integer, Integer>();
         hash.put(3, 4);
+        hash.put(1, 2);
     }
 }
 
@@ -17,6 +18,10 @@ class CodePathHashMap<E, K> {
         K val;
         E key;
         CodePathLinkedList next;
+
+        public CodePathLinkedList() {
+            next = null;
+        }
 
         public CodePathLinkedList(E key, K val) {
             this.val = val;
@@ -33,10 +38,10 @@ class CodePathHashMap<E, K> {
     public CodePathHashMap() {
         size = 0;
         capacity = 16;
-        hashMap = new CodePathLinkedList<E,K>[capacity];
+        hashMap = new CodePathLinkedList[capacity];
 
         for(int i = 0; i < hashMap.length; i++) {
-            hashMap[i] = new CodePathLinkedList<E,K>();
+            hashMap[i] = new CodePathLinkedList();
         }
     }
 
@@ -81,7 +86,7 @@ class CodePathHashMap<E, K> {
             capacity *= 2;
             size = 0;
 
-            hashMap = new CodePathLinkedList<E,K>[capacity];
+            hashMap = new CodePathLinkedList[capacity];
             for(int i = 0; i < hashMap.length; i++) {
                 hashMap[i] = new CodePathLinkedList<E,K>();
             }
