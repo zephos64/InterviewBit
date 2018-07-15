@@ -1,0 +1,122 @@
+Interview Question #1: Design the Twitter news feed
+Design the backend system for the Twitter news feed. We want to be able to post tweets, follow other users, and favorite tweets. A user should be able to see a feed of tweets of his/her followers.
+
+Answer:
+Requirements:
+Has users
+Users can post tweets
+Users can follow other users
+Users can favorite tweets
+User can see feed of tweets of people they follow
+Questions:
+Types of messages? Text only, around 150 chars
+Tweet feed ordering: time
+Private Messages? No
+Trending Tweets or suggested tweets/following? No
+Mentions/tagging? No
+Notifications? No
+Latency? Highly sensitive
+Consistency? Eventually consistent
+Availability: Highly available
+Deleting content: No
+
+Scoping:
+Expected number of users:~100M daily active users
+Expected number of tweets/day: ~500M tweets/day
+Expected number of favorite/tweet/day: ~10-20, with outliers
+Expected number of followers/person: ~200, with outliers
+Scoping analysis: high throughput of reading tweets, and lot of creation of tweets. Favoriting/followers is not as high throughput, but will have large difference between average and outliers
+
+Design:
+Database:
+Database would be BASE, okay for it to be slightly inconsistent with counts
+Database would need to be highly available, so BASE helps
+
+User table: User_ID*, User_Name, Follower_Count, Creation_time, necessary login info…
+Notes: Follower_Count is the number of followers a user has, it has a loose relationship with the followers table. This was done in order to improve performance for outliers
+
+Follower table: Follower_ID*, User_ID, Followee_ID, Creation_time
+
+Tweet table: Tweet_ID*, User_ID, Number_Favorites, Content, Creation_time, Last_Editied_time
+Index on Tweet_ID
+Index2 on Tweet_ID, User_ID
+Notes: Number_Favorites is the number of times a tweet has been favorited, it has a loose relationship with the favorite table. This was done in order to improve performance for outliers
+
+Favorite table: Favorite_ID*, Tweet_ID, User_ID, Creation_time
+
+Other Notes:
+* means it’s the primary key
+Creation time is time of creation for database table
+If two columns have same name, then it is a foreign key (exception for time related information)
+
+APIs:
+GET
+GET User
+Input: User_ID
+Get User information, and follower count
+GET Tweet
+Input: Tweet_ID
+Gets Tweet content, and favorite count
+GET Follower
+Input: User_ID
+Get list of followers from user_id
+GET Favorite
+Input: Tweet_ID
+Get list of users who favorited the tweet
+
+POST
+POST User
+Input: user name, and login informatino
+Create new user
+POST Tweet
+Input: Tweet_ID, content of tweet
+Create new tweet
+POST Favorite
+Input: User_ID, Tweet_ID
+Adds +1 to Tweet favorite count, adds user to favorite table
+POST Follow
+Input: User_ID, User_ID of followee
+Adds +1 to Followee follow count, adds row for user-followee binding
+
+PUT
+PUT User
+Input: User_ID
+Updates user information
+PUT Tweet
+Input: Tweet_ID, content of tweet
+Updates tweet information
+Updates last_edited_time
+
+DEL
+DEL User
+Input: User_ID
+Deletes user (or marks as deleted? Based on design)
+Deletes favorited table rows (does this decrement the favorite count for tweet?)
+Deletes followed table row (does this decrement follow count for followee?)
+DEL Tweet
+Input: Tweet_ID
+Deletes the tweet (or mark as deleted?)
+DEL Favorite
+Input: User_ID, Tweet_ID
+Removes 1 count to Tweet favorite count, removes user from favorite table
+DEL Follow
+Input: User_ID, User_ID of followee
+Removes 1 count to Followee follow count, removes row for user-followee binding
+
+Tweet Feed:
+Need a pagination system, or offset, to see where the user is at in the list.
+Offset needs to contain the following information
+Time of initial feed request
+So if new tweets come in, won’t interfere with user’s current place in feed list
+(Offset) Count of tweets have read since initial feed request
+This will allow users to scroll through list, and not see repeating tweets
+System will need to be able to determine correct tweet to grab, given these two parameters
+Time will allow system to grab tweets only before the initial request
+Offset will allow system to know where in list the user is at
+Problems
+This will be a slow query, especially if a user has lots of followers
+Possible solution: grab more data from DB at once, but only return certain amount to user, keeping rest in memory?
+Minimizes DB calls, but increases memory requirements
+Other:
+Favorite list and follower list likely slow queries, safe to assume these are rarely looked at?
+If something happens to system, follower count row vs real follower count (same with favorite), could become inconsistent, would this be an issue?
